@@ -1,0 +1,72 @@
+svg {
+    user-select: none;
+}
+
+.axis .grid-line {
+    stroke: #eee;
+}
+
+.dots {
+    fill-opacity: .5;
+    stroke-opacity: .5;
+    cursor: pointer;
+}
+
+.dots:hover {
+    fill-opacity: 1;
+    stroke-opacity: 1;
+}
+
+.low {
+    fill: #4F8FCE;
+    stroke: #4F8FCE;
+}
+
+.mid {
+    fill: #F5D800;
+    stroke: #F5D800;
+}
+
+.high {
+    fill: #FF9B2B;
+    stroke: #FF9B2B;
+}
+
+.serious {
+    fill: #FF6E6E;
+    stroke: #FF6E6E;
+}
+
+g.tick line {
+    stroke: #aaa;
+}
+
+g.tick text {
+    fill: #888;
+}
+
+g.axis path {
+    stroke: #aaa;
+}
+
+.selected-rect {
+    stroke: #4F8FCE;
+    fill: #4F8FCE;
+    fill-opacity: .2;
+}
+
+.tooltip {
+    position: absolute;
+    border: 1px solid #E0E0E0;
+    background: #fff;
+    box-shadow: 2px 2px 2px #666;
+    padding: 2px;
+}
+
+.hidden {
+    visibility: hidden;
+}
+
+.control-group {
+    margin: 10px 40px;
+}
