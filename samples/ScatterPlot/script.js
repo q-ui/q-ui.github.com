@@ -233,6 +233,7 @@ function ScatterChart() {
     }
 
     function renderGrid() {
+        _yAxisG.selectAll('g.tick .grid-line').remove();
         _yAxisG.selectAll('g.tick').filter(function (data, index, list) {
             return index != 0 && (index != list.length - 1);
         }).append('line')
