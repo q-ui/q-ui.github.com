@@ -1,3 +1,7 @@
+body {
+    font-family: "Microsoft Yahei", "\5FAE\8F6F\96C5\9ED1", tahoma, arial, verdana, sans-serif;
+    font-size: 0.5em;
+}
 svg {
     user-select: none;
 }
@@ -5,6 +9,10 @@ svg {
 .axis .grid-line {
     stroke: #eee;
 }
+
+.axislabel {
+    fill: #000;
+} 
 
 .dots {
     fill-opacity: .5;
@@ -43,6 +51,20 @@ g.tick line {
 
 g.tick text {
     fill: #888;
+}
+
+.legendtext {
+    fill: #444;
+}
+
+.hidetypes {
+    stroke: #444;
+    fill: #fff;
+}
+
+.showtypes {
+    stroke: #444;
+    fill: #444;
 }
 
 g.axis path {
