@@ -30,8 +30,6 @@ function ScatterChart() {
 
     var _xStartValue, _xEndValue;
 
-    var _timeFormat = d3.timeFormat('%Y/%m/%d %H:%M:%S');
-
     var _dragging = false;
 
     var _zoomArea = {};
@@ -64,7 +62,14 @@ function ScatterChart() {
             _originData = d.concat();
             _zoomed = false;
             _xStartValue = d[0].x;
-            _xEndValue = d[d.length - 1].x;
+            _xEndValue = d[0].x;
+            for (var i = 0; i < d.length; i++) {
+                if (_xStartValue > d[i].x)
+                    _xStartValue = d[i].x;
+                if (d[i].x > _xEndValue)
+                    _xEndValue = d[i].x;
+                //做其他数据准备工作
+            }
         } else {
             _zoomed = true;
             _xStartValue = startX;
@@ -83,6 +88,7 @@ function ScatterChart() {
 
         renderAxes();
         renderDots();
+        renderLegend();
     };
 
     function contentWidth() {
@@ -194,67 +200,59 @@ function ScatterChart() {
         renderYAxis();
 
         renderGrid();
-        renderLegend();
     }
 
     function renderXAxis() {
-        var delta = (_xEndValue - _xStartValue) / 10;
+        var delta = (_xEndValue - _xStartValue) / (xAxisDotCount - 1);
         var tickValus = [];
-        for (var i = 0; i < 11; i++) {
-            tickValus.push(_xStartValue + i * delta);
+        for (var i = 0; i < (xAxisDotCount + 2); i++) {
+            tickValus.push(_xStartValue - xAxisMarginRatio * delta + i * delta + ((i > 0) ? (xAxisMarginRatio - 1) * delta : 0) + ((i == xAxisDotCount + 1) ? (xAxisMarginRatio - 1) * delta : 0));
         }
 
-        _x = d3.scaleLinear().domain([_xStartValue, _xEndValue]).range([startX(), startX() + contentWidth()]);
-        var _xAxis = d3.axisBottom().tickSize(4).tickPadding(10).tickValues(tickValus).tickFormat(function (data, index, arr) {
-            if (index == 0 || index == arr.length - 1) {
-                return '';
-            } else {
-                return _timeFormat(new Date(data));
-            }
-        }).scale(_x);
+        _x = d3.scaleLinear().domain([_xStartValue - xAxisMarginRatio * delta, _xEndValue + xAxisMarginRatio * delta]).range([startX(), startX() + contentWidth()]);
+        var _xAxis = d3.axisBottom().tickSize(0).tickPadding(10).tickValues(tickValus).tickFormat(xAxisTickTextFormat).scale(_x);
         _xAxisG.call(_xAxis).attr('transform', 'translate(0, ' + startY() + ')');
         _xAxisG.append('text')
             .attr('class', 'axislabel')
             .attr('text-anchor', 'end')
             .attr('x', (_width - _padding.left - _padding.right) / 2 + _padding.left)
             .attr('y', 50)
-            .text('检测时间');
-        d3.selectAll('g.x g.tick text').attr('x', -5).attr('transform', 'rotate(-10)');
+            .text(xAxisLabel);
+        //make tick
+        d3.selectAll("g.x.axis g.tick line").attr("y2", function (d, index, arr) {
+            if (index == 0 || index == (arr.length - 1))
+                return 0;
+            else
+                return 4;
+        });
     }
 
     function renderYAxis() {
         var domain = [];
         var range = [];
 
-        var rangeRatio = [0, .15, .38, .61, .84, 1];
-
-        for (var i = 0; i < 6; i++) {
+        for (var i = 0; i < (yAxisDotCount + 2); i++) {
             domain.push(i);
-            range.push(startY() - contentHeight() * rangeRatio[i]);
+            range.push(startY() - contentHeight() / (yAxisDotCount - 1 + 2 * yAxisMarginRatio) * (i + ((i > 0) ? (yAxisMarginRatio - 1) : 0) + ((i == yAxisDotCount + 1) ? (yAxisMarginRatio - 1) : 0)));
         }
 
         _y = d3.scaleOrdinal().domain(domain).range(range);
-        var _yAxis = d3.axisLeft().tickSize(4).tickPadding(5).tickFormat(function (data, index, arr) {
-            if (index == 0 || index == arr.length) {
-                return '';
-            } else if (index == 1) {
-                return '低';
-            } else if (index == 2) {
-                return '中';
-            } else if (index == 3) {
-                return '高';
-            } else if (index == 4) {
-                return '严重';
-            }
-        }).scale(_y);
+        var _yAxis = d3.axisLeft().tickSize(0).tickPadding(5).tickFormat(yAxisFormatFunction).scale(_y);
         _yAxisG.call(_yAxis).attr('transform', 'translate(' + startX() + ', 0)');
         _yAxisG.append('text')
-            .text('级别')
+            .text(yAxisLabel)
             .attr('class', 'axislabel')
             .attr('text-anchor', 'end')
             .attr('x', -(_height - _padding.bottom) / 2)
             .attr('y', -(_padding.left) / 2)
             .attr('transform', 'rotate(-90)');
+        //make tick
+        d3.selectAll("g.y.axis g.tick line").attr("x2", function (d, index, arr) {
+            if (index == 0 || index == (arr.length - 1))
+                return 0;
+            else
+                return -4;
+        });
     }
 
     function renderGrid() {
@@ -270,6 +268,7 @@ function ScatterChart() {
         _bodyG.selectAll('path').data(_data).enter().append('path')
             .on('mouseover', function (d) {
                 if (_dragging) return;
+
                 var tooltipDom = _tooltipDiv.nodes()[0];
                 tooltipDom.innerHTML = makeTooltipHtml(d);
 
@@ -298,7 +297,8 @@ function ScatterChart() {
         _bodyG.selectAll('path').data(_data).attr('transform', function (d) {
             return 'translate(' + _x(d.x) + ', ' + _y(d.y) + ')';
         }).attr('d', function (data) {
-            return (d3.symbol().type(typesArr[data.type]).size(data.count))();
+            var typeObj = typesObjArr.find(function (typeObj) { return typeObj.typeId == data.type });
+            return (d3.symbol().type(typeObj.type).size(data.count))();
         }).attr('class', function (data) {
             var classes = 'dots ';
             if (data.y == 1) {
@@ -317,30 +317,30 @@ function ScatterChart() {
     //suliu: render legend at the bottom of the chart  
     function renderLegend() {
         _svg.selectAll(".legend")
-            .data(typesArr)
+            .data(typeTextArr)
             .enter()
             .append("g")
             .attr("class", "legend")
             .attr("transform", function (d, i) {
-                var legendX = (_width - _padding.right) - (6 - i) * 100;   //set position for each legend element  
+                var legendX = (_width - _padding.right) - (typeTextArr.length - i) * 100;   //set position for each legend element  
                 var legendY = _height - _legendbottom;
                 return "translate(" + legendX + ", " + legendY + ")";
             })
             .append('path')
             .attr('d', function (d, i) {
-                return (d3.symbol().type(d).size(100))();
+                return (d3.symbol().type(typesObjArr.find(function (item) { return item.typeId == d.typeId; }).type).size(100))();
             })
             .attr("class", "showtypes")
             .on('click', function (d) {
                 // console.log('You click ' + JSON.stringify(d));
-                typeSelect = d;
+                typeIdSelect = d.typeId;
                 if (d3.select(this).classed("hidetypes")) {
                     d3.select(this).classed("hidetypes", false);
                     d3.select(this).classed("showtypes", true);
 
                     _bodyG.selectAll('path')
                         .filter(function (data) {
-                            return typesArr[data.type] == typeSelect
+                            return data.type == typeIdSelect;
                         })
                         .classed("hidden", false);
                 } else {
@@ -349,7 +349,7 @@ function ScatterChart() {
 
                     _bodyG.selectAll('path')
                         .filter(function (data) {
-                            return typesArr[data.type] == typeSelect
+                            return data.type == typeIdSelect;
                         })
                         .classed("hidden", true);
                 }
@@ -360,7 +360,7 @@ function ScatterChart() {
             .attr("y", 5)
             .classed("legendtext", true)
             .text(function (d, i) {
-                return typeTextArr[i];
+                return typeTextArr.find(function (item) { return item.typeId == d.typeId }).typeText;
             });
     }
 
@@ -369,7 +369,7 @@ function ScatterChart() {
             + '<tr><td>时间：</td><td>$1</td></tr>'
             + '<tr><td>攻击次数：</td><td>$2</td></tr>'
             + '<tr><td>攻击类型：</td><td>$3</td></tr>';
-        return tpl.replace('$1', _timeFormat(d.x)).replace('$2', d.count).replace('$3', d.type);
+        return tpl.replace('$1', d.x).replace('$2', d.count).replace('$3', d.type);
     }
 
     return _chart;
@@ -380,43 +380,89 @@ var kr = Math.sin(3.141592653589793 / 10) / Math.sin(7 * 3.141592653589793 / 10)
 var kx = Math.sin(6.283185307179586 / 10) * kr;
 var ky = -Math.cos(6.283185307179586 / 10) * kr;
 var pentagon = {
-  draw: function(context, size) {
-    var r = Math.sqrt(size * ka),
-        x = kx * r,
-        y = ky * r;
-    context.moveTo(0, -r);
-    for (var i = 1; i < 5; ++i) {
-      var a = 6.283185307179586 * i / 5,
-          c = Math.cos(a),
-          s = Math.sin(a);
-      context.lineTo(s * r, -c * r);
+    draw: function (context, size) {
+        var r = Math.sqrt(size * ka),
+            x = kx * r,
+            y = ky * r;
+        context.moveTo(0, -r);
+        for (var i = 1; i < 5; ++i) {
+            var a = 6.283185307179586 * i / 5,
+                c = Math.cos(a),
+                s = Math.sin(a);
+            context.lineTo(s * r, -c * r);
+        }
+        context.closePath();
     }
-    context.closePath();
-  }
 };
 var sqrt3 = Math.sqrt(3);
 var inversetriangle = {
-  draw: function(context, size) {
-    var y = -Math.sqrt(size / (sqrt3 * 3));
-    context.moveTo(0, -(y * 2));
-    context.lineTo(-sqrt3 * y, y);
-    context.lineTo(sqrt3 * y, y);
-    context.closePath();
-  }
+    draw: function (context, size) {
+        var y = -Math.sqrt(size / (sqrt3 * 3));
+        context.moveTo(0, -(y * 2));
+        context.lineTo(-sqrt3 * y, y);
+        context.lineTo(sqrt3 * y, y);
+        context.closePath();
+    }
 };
-var typesArr = [inversetriangle, d3['symbolStar'], d3['symbolSquare'], d3['symbolDiamond'], d3['symbolCircle'], pentagon];
-var typeTextArr = ['扫描', '网络攻击', '拒绝服务', '网络钓鱼', '垃圾邮件', '恶意软件'];
-var typeSelect = '';
+var typesObjArr = [{ typeId: 0, type: inversetriangle },
+{ typeId: 1, type: d3['symbolStar'] },
+{ typeId: 2, type: d3['symbolSquare'] },
+{ typeId: 3, type: d3['symbolDiamond'] },
+{ typeId: 4, type: d3['symbolCircle'] },
+{ typeId: 5, type: pentagon }];
+var typeIdSelect = '';
+
+//x Axsis variable
+var xAxisDotCount = 6;
+var xAxisTickTextFormat = function (data, index, arr) {
+    if (index == 0 || index == arr.length - 1) {
+        return '';
+    } else {
+        var _timeFormat = d3.timeFormat('%m/%d %H:%M:%S');
+        return _timeFormat(new Date(data));
+    }
+};
+var xAxisLabel = '检测时间';
+var xAxisMarginRatio = 0.3;
+//y Axsis variable
+var yAxisDotCount = 4;
+var yAxisFormatFunction = function (data, index, arr) {
+    if (index == 0 || index == arr.length) {
+        return '';
+    } else if (index == 1) {
+        return '低';
+    } else if (index == 2) {
+        return '中';
+    } else if (index == 3) {
+        return '高';
+    } else if (index == 4) {
+        return '严重';
+    }
+};
+var yAxisLabel = '级别';
+var yAxisMarginRatio = 0.5;
+//label related variable
+var typeTextArr = [
+    { typeId: 0, typeText: '扫描' },
+    { typeId: 1, typeText: '网络攻击' },
+    { typeId: 2, typeText: '拒绝服务' },
+    { typeId: 3, typeText: '网络钓鱼' },
+    { typeId: 4, typeText: '垃圾邮件' },
+    { typeId: 5, typeText: '恶意软件' }];
+//random data source
+var typesDataSource = [inversetriangle, d3['symbolStar'], d3['symbolSquare'], d3['symbolDiamond'], d3['symbolCircle'], pentagon];
+
 
 function updateData() {
     var max = 100;
     var now = new Date();
     var dataArr = [];
+
     for (var i = 0; i < max; i++) {
         dataArr.push({
             x: now.getTime() - (max - i) * 3600 * 1000,
             count: Math.ceil(Math.random() * 100) + 28,
-            type: Math.floor(Math.random() * typesArr.length),
+            type: Math.floor(Math.random() * typesDataSource.length),
             y: Math.floor(Math.random() * 4 + 1)
         });
     }
