@@ -1,0 +1,64 @@
+.hs-worldmap-container {
+  width: 830px;
+  height: 420px;
+  display: flex;
+  border: 1px solid gray;
+  margin: 50px;
+}
+
+.hs-worldmap-tool {
+  width: 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.hs-worldmap-tool div {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.hs-worldmap-zoomin {
+  background-image: url(../image/map-zoomin.png);
+}
+
+.hs-worldmap-zoomout {
+  background-image: url(../image/map-zoomout.png);
+}
+
+.hs-worldmap-center {
+  background-image: url(../image/map-center.png);
+}
+
+.hs-worldmap-graticule {
+    fill: none; 
+    stroke: #aaa; 
+    stroke-width: 0; 
+    stroke-opacity: .5; 
+    pointer-events: none;
+}
+
+.hs-worldmap-hoverover {
+  padding: 4px; 
+  border-radius: 1px; 
+  background-color: #FFF; 
+  box-shadow: 1px 1px 5px #CCC; 
+  font-size: 12px; border: 1px solid #CCC;
+} 
+
+.hs-worldmap-hoverinfo {
+  user-select: none;
+  cursor: default;
+}
+
+.hs-worldmap-flag {
+  height: 20px;
+  text-align: right;
+  padding-right: 30px;
+}
+
+.hs-worldmap-flag-item {
+  margin: 0 5px;
+  font-size: 80%;
+}
