@@ -11,38 +11,18 @@ svg {
 }
 
 .axislabel {
-    fill: #000;
+    fill: #999;
 } 
 
 .dots {
-    fill-opacity: .5;
-    stroke-opacity: .5;
+    fill-opacity: 1;
+    stroke-opacity: 1;
     cursor: pointer;
 }
 
 .dots:hover {
-    fill-opacity: 1;
+    fill-opacity: 0.5;
     stroke-opacity: 1;
-}
-
-.low {
-    fill: #4F8FCE;
-    stroke: #4F8FCE;
-}
-
-.mid {
-    fill: #F5D800;
-    stroke: #F5D800;
-}
-
-.high {
-    fill: #FF9B2B;
-    stroke: #FF9B2B;
-}
-
-.serious {
-    fill: #FF6E6E;
-    stroke: #FF6E6E;
 }
 
 g.tick line {
@@ -50,21 +30,23 @@ g.tick line {
 }
 
 g.tick text {
-    fill: #888;
+    fill: #999;
+}
+
+.legend-label:hover {
+    cursor:pointer;
 }
 
 .legendtext {
-    fill: #444;
+    font-size: 0.9em;
 }
 
 .hidetypes {
-    stroke: #444;
-    fill: #fff;
+    opacity: 0;
 }
 
-.showtypes {
-    stroke: #444;
-    fill: #444;
+.showtypes{
+    opacity: 1;
 }
 
 g.axis path {
