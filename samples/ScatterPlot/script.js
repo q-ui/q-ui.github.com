@@ -1,20 +1,24 @@
 function ScatterChart() {
     var _chart = {};
 
-    var _padding = {
-        top: 30,
-        right: 60,
-        bottom: 110,
-        left: 60
-    },
-        _legendbottom = 30,   //area for legend in Method 2  
-        _legendright = 100;  //area for legend in Method 1  ;
+    var _chart = {};
+
+    var _legendbottom = 25,   //area for legend in Method 2  
+        _legendleft = 40,
+        _padding = {
+            top: 0,
+            right: 20,
+            bottom: 20,
+            left: 60
+        };  //area for legend in Method 1  ;
 
     var _width, _height;
 
     var _initialized = false;
 
     var _svg;
+
+    var _legend;
 
     var _x, _y;
 
@@ -37,6 +41,10 @@ function ScatterChart() {
     var _zoomed = false;
 
     var _originData;
+    var _minCount;
+    var _maxCount;
+
+    var _totalCount = {};
 
     _chart.width = function (w) {
         if (!arguments.length) return _width;
@@ -46,7 +54,7 @@ function ScatterChart() {
 
     _chart.height = function (h) {
         if (!arguments.length) return _height;
-        _height = h;
+        _height = h - _legendbottom;;
         return _chart;
     };
 
@@ -63,12 +71,20 @@ function ScatterChart() {
             _zoomed = false;
             _xStartValue = d[0].x;
             _xEndValue = d[0].x;
+            _minCount = d[0].count;
+            _maxCount = d[0].count;
+            for (var i = 0; i < typeTextArr.length; i++)
+                _totalCount[typeTextArr[i].typeId] = 0;
             for (var i = 0; i < d.length; i++) {
                 if (_xStartValue > d[i].x)
                     _xStartValue = d[i].x;
                 if (d[i].x > _xEndValue)
                     _xEndValue = d[i].x;
-                //做其他数据准备工作
+                if (_minCount > d[i].count)
+                    _minCount = d[i].count;
+                if (_maxCount < d[i].count)
+                    _maxCount = d[i].count;
+                _totalCount[d[i].type] += d[i].count;
             }
         } else {
             _zoomed = true;
@@ -122,6 +138,7 @@ function ScatterChart() {
     function init() {
         _initialized = true;
         _svg = d3.select('body').append('svg');
+        _legend = d3.select('body').append('div').attr('style', 'text-align:center;width:' + _width + 'px;');
         _svg.on('mousedown', function (d) {
             _dragging = true;
             _zoomArea.x1 = d3.event.clientX - this.getBoundingClientRect().left;
@@ -148,6 +165,35 @@ function ScatterChart() {
         _selectedRect = _svg.append('g').attr('class', 'selected-rect').append('rect');
 
         _tooltipDiv = d3.select('body').append('div').attr('class', 'tooltip hidden');
+
+        addEventListener('dotmouseover', function (e) {
+            if (_dragging) return;
+            var tooltipDom = _tooltipDiv.nodes()[0];
+            tooltipDom.innerHTML = makeTooltipHtml(e.parameters[0]);
+
+            var svgDom = _svg.nodes()[0];
+
+            _tooltipDiv.attr('style', function () {
+                var tooltipWidth = tooltipDom.getBoundingClientRect().width;
+                var svgRect = svgDom.getBoundingClientRect();
+
+                var left = e.parameters[1] + 20;
+                if (e.parameters[1] + 20 + tooltipWidth > svgRect.right) {
+                    left = svgRect.right - tooltipWidth;
+                }
+
+                return 'left: ' + left + 'px; '
+                    + 'top: ' + (e.parameters[2] + 20) + 'px';
+            }).classed('hidden', false);
+        });
+
+        addEventListener('dotmouseout', function (e) {
+            _tooltipDiv.classed('hidden', true);
+        });
+
+        addEventListener('dotclick', function (e) {
+            console.log('You click ' + JSON.stringify(e.parameters[0]));
+        });
     }
 
     function drawSelectedRect() {
@@ -203,21 +249,24 @@ function ScatterChart() {
     }
 
     function renderXAxis() {
-        var delta = (_xEndValue - _xStartValue) / (xAxisDotCount - 1);
+        var xAxisRealDotCount = (newWidth && newWidth < 600) ? Math.floor(xAxisDotCount * newWidth / width) : xAxisDotCount;
+        var delta = (_xEndValue - _xStartValue) / (xAxisRealDotCount - 1);
         var tickValus = [];
-        for (var i = 0; i < (xAxisDotCount + 2); i++) {
-            tickValus.push(_xStartValue - xAxisMarginRatio * delta + i * delta + ((i > 0) ? (xAxisMarginRatio - 1) * delta : 0) + ((i == xAxisDotCount + 1) ? (xAxisMarginRatio - 1) * delta : 0));
+        for (var i = 0; i < (xAxisRealDotCount + 2); i++) {
+            tickValus.push(_xStartValue - xAxisMarginRatio * delta + i * delta + ((i > 0) ? (xAxisMarginRatio - 1) * delta : 0) + ((i == xAxisRealDotCount + 1) ? (xAxisMarginRatio - 1) * delta : 0));
         }
 
         _x = d3.scaleLinear().domain([_xStartValue - xAxisMarginRatio * delta, _xEndValue + xAxisMarginRatio * delta]).range([startX(), startX() + contentWidth()]);
         var _xAxis = d3.axisBottom().tickSize(0).tickPadding(10).tickValues(tickValus).tickFormat(xAxisTickTextFormat).scale(_x);
         _xAxisG.call(_xAxis).attr('transform', 'translate(0, ' + startY() + ')');
-        _xAxisG.append('text')
+        _xAxisG.selectAll('text.axislabel').data([xAxisLabel]).enter()
+            .append('text')
             .attr('class', 'axislabel')
             .attr('text-anchor', 'end')
             .attr('x', (_width - _padding.left - _padding.right) / 2 + _padding.left)
-            .attr('y', 50)
-            .text(xAxisLabel);
+            .attr('y', 30)
+            .text(function (d) { return d; });
+        _xAxisG.selectAll('text.axislabel').data([xAxisLabel]).text(function (d) { return d; });
         //make tick
         d3.selectAll("g.x.axis g.tick line").attr("y2", function (d, index, arr) {
             if (index == 0 || index == (arr.length - 1))
@@ -239,13 +288,16 @@ function ScatterChart() {
         _y = d3.scaleOrdinal().domain(domain).range(range);
         var _yAxis = d3.axisLeft().tickSize(0).tickPadding(5).tickFormat(yAxisFormatFunction).scale(_y);
         _yAxisG.call(_yAxis).attr('transform', 'translate(' + startX() + ', 0)');
-        _yAxisG.append('text')
-            .text(yAxisLabel)
+        _yAxisG.selectAll('text.axislabel').data([yAxisLabel]).enter()
+            .append('text')
+            .text(function (d) { return d; })
             .attr('class', 'axislabel')
             .attr('text-anchor', 'end')
             .attr('x', -(_height - _padding.bottom) / 2)
             .attr('y', -(_padding.left) / 2)
             .attr('transform', 'rotate(-90)');
+        _yAxisG.selectAll('text.axislabel').data([yAxisLabel])
+            .text(function (d) { return d; });
         //make tick
         d3.selectAll("g.y.axis g.tick line").attr("x2", function (d, index, arr) {
             if (index == 0 || index == (arr.length - 1))
@@ -268,100 +320,90 @@ function ScatterChart() {
         _bodyG.selectAll('path').data(_data).enter().append('path')
             .on('mouseover', function (d) {
                 if (_dragging) return;
-
-                var tooltipDom = _tooltipDiv.nodes()[0];
-                tooltipDom.innerHTML = makeTooltipHtml(d);
-
-                var svgDom = _svg.nodes()[0];
-
-                _tooltipDiv.attr('style', function () {
-                    var tooltipWidth = tooltipDom.getBoundingClientRect().width;
-                    var svgRect = svgDom.getBoundingClientRect();
-
-                    var left = d3.event.clientX + 20;
-                    if (d3.event.clientX + 20 + tooltipWidth > svgRect.right) {
-                        left = svgRect.right - tooltipWidth;
-                    }
-
-                    return 'left: ' + left + 'px; '
-                        + 'top: ' + (d3.event.clientY + 20) + 'px';
-                }).classed('hidden', false);
+                var evt = new Event('dotmouseover');
+                evt.parameters = [d, d3.event.clientX, d3.event.clientY];
+                window.dispatchEvent(evt);
             }).on('mouseout', function (d) {
-                _tooltipDiv.classed('hidden', true);
+                var evt = new Event('dotmouseout');
+                evt.parameters = [d, d3.event.clientX, d3.event.clientY];
+                window.dispatchEvent(evt);
             }).on('click', function (d) {
-                console.log('You click ' + JSON.stringify(d));
+                var evt = new Event('dotclick');
+                evt.parameters = [d, d3.event.clientX, d3.event.clientY];
+                window.dispatchEvent(evt);
             });
 
         _bodyG.selectAll('path').data(_data).exit().remove();
 
+        var countRatio = d3.scaleLinear().domain([_minCount, _maxCount]).range([50, 500]);
         _bodyG.selectAll('path').data(_data).attr('transform', function (d) {
             return 'translate(' + _x(d.x) + ', ' + _y(d.y) + ')';
         }).attr('d', function (data) {
-            var typeObj = typesObjArr.find(function (typeObj) { return typeObj.typeId == data.type });
-            return (d3.symbol().type(typeObj.type).size(data.count))();
-        }).attr('class', function (data) {
-            var classes = 'dots ';
-            if (data.y == 1) {
-                classes += 'low';
-            } else if (data.y == 2) {
-                classes += 'mid';
-            } else if (data.y == 3) {
-                classes += 'high';
-            } else if (data.y == 4) {
-                classes += 'serious';
-            }
-            return classes;
-        });
+            return (d3.symbol().type(d3['symbolCircle']).size(countRatio(data.count)))();
+        }).attr('class', 'dots').attr('fill', function (d) { return d.color; })
+            .attr('stroke', function (d) { return d.color });
+        //filter dots ,hide all except for the first kind
+        _bodyG.selectAll('path')
+            .filter(function (data) {
+                return data.type == typeTextArr[0].typeId;
+            })
+            .classed("hidden", false);
+        _bodyG.selectAll('path')
+            .filter(function (data) {
+                return data.type != typeTextArr[0].typeId;
+            })
+            .classed("hidden", true);
     }
 
     //suliu: render legend at the bottom of the chart  
     function renderLegend() {
-        _svg.selectAll(".legend")
-            .data(typeTextArr)
-            .enter()
-            .append("g")
-            .attr("class", "legend")
-            .attr("transform", function (d, i) {
-                var legendX = (_width - _padding.right) - (typeTextArr.length - i) * 100;   //set position for each legend element  
-                var legendY = _height - _legendbottom;
-                return "translate(" + legendX + ", " + legendY + ")";
-            })
-            .append('path')
-            .attr('d', function (d, i) {
-                return (d3.symbol().type(typesObjArr.find(function (item) { return item.typeId == d.typeId; }).type).size(100))();
-            })
-            .attr("class", "showtypes")
-            .on('click', function (d) {
-                // console.log('You click ' + JSON.stringify(d));
-                typeIdSelect = d.typeId;
-                if (d3.select(this).classed("hidetypes")) {
-                    d3.select(this).classed("hidetypes", false);
-                    d3.select(this).classed("showtypes", true);
-
-                    _bodyG.selectAll('path')
-                        .filter(function (data) {
-                            return data.type == typeIdSelect;
-                        })
-                        .classed("hidden", false);
-                } else {
-                    d3.select(this).classed("hidetypes", true);
-                    d3.select(this).classed("showtypes", false);
-
-                    _bodyG.selectAll('path')
-                        .filter(function (data) {
-                            return data.type == typeIdSelect;
-                        })
-                        .classed("hidden", true);
-                }
+        _legend.selectAll(".legend-label").data(typeTextArr).remove();
+        var legendLengthRatio = typeTextArr.length + 0.5;
+        var legendDiv = _legend.selectAll(".legend-label").data(typeTextArr)
+            .enter().append("div").attr("class", "legend-label")
+            .attr("style", function (d) {
+                var style = "display: inline-block;color: #666;text-align:center;height:24px;";
+                return style + "margin-right:" + ((_width / legendLengthRatio < 100) ? (15 * _width / 600) : 15) + "px;";
             });
 
-        d3.selectAll(".legend").data(typeTextArr).append("text")
-            .attr("x", 12)
-            .attr("y", 5)
-            .classed("legendtext", true)
+        legendDiv.append('div').attr("style", function (d) {
+            var style = "display: inline-block;border-radius: 2px;width:16px;height: 16px;margin-right:4px;vertical-align:middle;";
+            return style + "background-color:" + d.color + ";";
+
+        })
+            .append('img').attr('src', "selection_2.svg");
+        legendDiv.append('span').attr('style', 'vertical-align:middle;')
             .text(function (d, i) {
-                return typeTextArr.find(function (item) { return item.typeId == d.typeId }).typeText;
+                var labelObj = typeTextArr.find(function (item) { return item.typeId == d.typeId });
+                return labelObj.typeText + " " + _totalCount[labelObj.typeId];
+            })
+
+        _legend.selectAll('.legend-label').selectAll('img').classed('showtypes', function (item) {
+            return item.typeId == typeTextArr[0].typeId;
+        });
+        _legend.selectAll('.legend-label').selectAll('img').classed('hidetypes', function (item) {
+            return item.typeId != typeTextArr[0].typeId;
+        });
+        _legend.selectAll('.legend-label').on('click', function (d) {
+            var typeIdSelect = d.typeId;
+            _legend.selectAll('.legend-label').selectAll('img').classed('showtypes', function (item) {
+                return item.typeId == typeIdSelect;
             });
+            _legend.selectAll('.legend-label').selectAll('img').classed('hidetypes', function (item) {
+                return item.typeId != typeIdSelect;
+            });
+
+            _bodyG.selectAll('path')
+                .filter(function (data) {
+                    return data.type == typeIdSelect;
+                })
+                .classed("hidden", false);
+            _bodyG.selectAll('path')
+                .filter(function (data) {
+                    return data.type != typeIdSelect;
+                })
+                .classed("hidden", true);
+        })
     }
 
     function makeTooltipHtml(d) {
@@ -375,41 +417,6 @@ function ScatterChart() {
     return _chart;
 }
 
-var ka = 0.89081309152928522810;
-var kr = Math.sin(3.141592653589793 / 10) / Math.sin(7 * 3.141592653589793 / 10);
-var kx = Math.sin(6.283185307179586 / 10) * kr;
-var ky = -Math.cos(6.283185307179586 / 10) * kr;
-var pentagon = {
-    draw: function (context, size) {
-        var r = Math.sqrt(size * ka),
-            x = kx * r,
-            y = ky * r;
-        context.moveTo(0, -r);
-        for (var i = 1; i < 5; ++i) {
-            var a = 6.283185307179586 * i / 5,
-                c = Math.cos(a),
-                s = Math.sin(a);
-            context.lineTo(s * r, -c * r);
-        }
-        context.closePath();
-    }
-};
-var sqrt3 = Math.sqrt(3);
-var inversetriangle = {
-    draw: function (context, size) {
-        var y = -Math.sqrt(size / (sqrt3 * 3));
-        context.moveTo(0, -(y * 2));
-        context.lineTo(-sqrt3 * y, y);
-        context.lineTo(sqrt3 * y, y);
-        context.closePath();
-    }
-};
-var typesObjArr = [{ typeId: 0, type: inversetriangle },
-{ typeId: 1, type: d3['symbolStar'] },
-{ typeId: 2, type: d3['symbolSquare'] },
-{ typeId: 3, type: d3['symbolDiamond'] },
-{ typeId: 4, type: d3['symbolCircle'] },
-{ typeId: 5, type: pentagon }];
 var typeIdSelect = '';
 
 //x Axsis variable
@@ -425,33 +432,33 @@ var xAxisTickTextFormat = function (data, index, arr) {
 var xAxisLabel = '检测时间';
 var xAxisMarginRatio = 0.3;
 //y Axsis variable
-var yAxisDotCount = 4;
+var yAxisDotCount = 6;
 var yAxisFormatFunction = function (data, index, arr) {
     if (index == 0 || index == arr.length) {
         return '';
     } else if (index == 1) {
-        return '低';
+        return '扫描';
     } else if (index == 2) {
-        return '中';
+        return '网络攻击';
     } else if (index == 3) {
-        return '高';
+        return '拒绝服务';
     } else if (index == 4) {
-        return '严重';
+        return '网络钓鱼';
+    } else if (index == 5) {
+        return '垃圾邮件';
+    } else if (index == 6) {
+        return '恶意软件';
     }
 };
-var yAxisLabel = '级别';
+var yAxisLabel = '';
 var yAxisMarginRatio = 0.5;
 //label related variable
 var typeTextArr = [
-    { typeId: 0, typeText: '扫描' },
-    { typeId: 1, typeText: '网络攻击' },
-    { typeId: 2, typeText: '拒绝服务' },
-    { typeId: 3, typeText: '网络钓鱼' },
-    { typeId: 4, typeText: '垃圾邮件' },
-    { typeId: 5, typeText: '恶意软件' }];
-//random data source
-var typesDataSource = [inversetriangle, d3['symbolStar'], d3['symbolSquare'], d3['symbolDiamond'], d3['symbolCircle'], pentagon];
-
+    { typeId: 1, typeText: '低', color: "#4F8FCE" },
+    { typeId: 2, typeText: '中', color: "#F5D800" },
+    { typeId: 3, typeText: '高', color: "#FF9B2B" },
+    { typeId: 4, typeText: '严重', color: "#FF6E6E" }];
+var newWidth = null;
 
 function updateData() {
     var max = 100;
@@ -459,12 +466,29 @@ function updateData() {
     var dataArr = [];
 
     for (var i = 0; i < max; i++) {
-        dataArr.push({
+        var dataTemp = {
             x: now.getTime() - (max - i) * 3600 * 1000,
             count: Math.ceil(Math.random() * 100) + 28,
-            type: Math.floor(Math.random() * typesDataSource.length),
-            y: Math.floor(Math.random() * 4 + 1)
-        });
+            y: Math.floor(Math.random() * 6 + 1),
+            type: Math.floor(Math.random() * 4 + 1)
+        };
+        switch (dataTemp.type) {
+            case 1:
+                dataTemp.color = "#4F8FCE";
+                break;
+            case 2:
+                dataTemp.color = "#F5D800";
+                break;
+            case 3:
+                dataTemp.color = "#FF9B2B";
+                break;
+            case 4:
+                dataTemp.color = "#FF6E6E";
+                break;
+            default:
+                dataTemp.color = "#4F8FCE";
+        }
+        dataArr.push(dataTemp);
     }
     chart.data(dataArr).render();
 }
