@@ -1,0 +1,13 @@
+.hoverover {
+    padding: 4px; 
+    border-radius: 1px; 
+    border: 1px solid #E0E0E0;
+    background-color: #FFF; 
+    box-shadow: 2px 2px 2px #666;
+    font-size: 12px;
+}
+
+.hoverinfo {
+    user-select: none;
+    cursor: default;
+}

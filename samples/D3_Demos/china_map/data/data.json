@@ -1,0 +1,34 @@
+{
+    "items": [
+        {
+            "province": "北京",
+            "abbreviation": "BJ",
+            "count": 2635
+        },
+        {
+            "province": "上海",
+            "abbreviation": "SH",
+            "count": 2203
+        },
+        {
+            "province": "广东",
+            "abbreviation": "GD",
+            "count": 1253
+        },
+        {
+            "province": "江苏",
+            "abbreviation": "JS",
+            "count": 1022
+        },
+        {
+            "province": "浙江",
+            "abbreviation": "ZJ",
+            "count": 1856
+        },
+        {
+            "province": "湖北",
+            "abbreviation": "HB",
+            "count": 801
+        }
+    ]
+}

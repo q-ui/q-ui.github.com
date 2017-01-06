@@ -1,0 +1,60 @@
+{
+    "nodes": [
+        {
+            "id": "red"
+        },
+        {
+            "id": "orange"
+        },
+        {
+            "id": "yellow"
+        },
+        {
+            "id": "green"
+        },
+        {
+            "id": "blue"
+        },
+        {
+            "id": "violet"
+        },
+        {
+            "id": "lightgray"
+        },
+        {
+            "id": "gray"
+        },
+        {
+            "id": "pink"
+        },
+        {
+            "id": "lightgreen"
+        }
+    ],
+    "links": [
+        {
+            "source": "red",
+            "target": "yellow"
+        },
+        {
+            "source": "red",
+            "target": "blue"
+        },
+        {
+            "source": "red",
+            "target": "green"
+        },
+        {
+            "source": "red",
+            "target": "lightgray"
+        },
+        {
+            "source": "yellow",
+            "target": "pink"
+        },
+        {
+            "source": "gray",
+            "target": "green"
+        }
+    ]
+}

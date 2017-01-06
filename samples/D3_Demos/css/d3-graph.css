@@ -1,0 +1,7 @@
+.d3-graph {
+    border: 2px solid gray;
+    border-radius: 4px;
+    box-shadow: 4px 4px 4px gray;
+
+    margin: 20px;
+}

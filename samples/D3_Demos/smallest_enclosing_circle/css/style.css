@@ -1,0 +1,14 @@
+.circle {
+  fill-opacity: .5;
+}
+
+.ring {
+  fill: none;
+  stroke: #000;
+  pointer-events: none;
+}
+
+.ring-inner {
+  stroke-width: 5px;
+  stroke-opacity: .25;
+}

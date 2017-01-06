@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>Sortable Bar Chart</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="../css/d3-graph.css" rel="stylesheet">
+	<link href="css/style.css" rel="stylesheet">
+	<link href="../node_modules/bootstrap/dist/css/bootstrap.css" rel="stylesheet">
+
+	<script src="../node_modules/d3/build/d3.js"></script>
+</head>
+
+<body>
+	<div class="container-fluid">
+		<div class="col-lg-8 col-lg-offset-1 d3-graph d3-sortable-bar-chart"></div>
+		<div class="col-lg-2 col-lg-offset-1">
+			<label for="sort" style="margin-left">排序</label>
+			<input type="checkbox" id="sort" name="sort" value="sorted">
+		</div>
+	</div>
+	<script src="js/script.js"></script>
+</body>
+
+</html>

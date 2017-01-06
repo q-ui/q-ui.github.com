@@ -1,0 +1,97 @@
+[
+    {
+        "yValue": 5.1,
+        "xValue": 3.5,
+        "category": "setosa"
+    },
+    {
+        "yValue": 4.9,
+        "xValue": 3.0,
+        "category": "setosa"
+    },
+    {
+        "yValue": 4.7,
+        "xValue": 3.2,
+        "category": "setosa"
+    },
+    {
+        "yValue": 4.6,
+        "xValue": 3.1,
+        "category": "setosa"
+    },
+    {
+        "yValue": 5.4,
+        "xValue": 3.9,
+        "category": "setosa"
+    },
+    {
+        "yValue": 4.9,
+        "xValue": 3.1,
+        "category": "setosa"
+    },
+    {
+        "yValue": 4.8,
+        "xValue": 3.0,
+        "category": "setosa"
+    },
+    {
+        "yValue": 7.0,
+        "xValue": 3.2,
+        "category": "versicolor"
+    },
+    {
+        "yValue": 6.4,
+        "xValue": 3.2,
+        "category": "versicolor"
+    },
+    {
+        "yValue": 6.9,
+        "xValue": 3.1,
+        "category": "versicolor"
+    },
+    {
+        "yValue": 5.7,
+        "xValue": 2.8,
+        "category": "versicolor"
+    },
+    {
+        "yValue": 5.7,
+        "xValue": 2.8,
+        "category": "versicolor"
+    },
+    {
+        "yValue": 6.3,
+        "xValue": 3.3,
+        "category": "virginica"
+    },
+    {
+        "yValue": 5.8,
+        "xValue": 2.7,
+        "category": "virginica"
+    },
+    {
+        "yValue": 6.3,
+        "xValue": 2.9,
+        "category": "virginica"
+    },
+    {
+        "yValue": 6.5,
+        "xValue": 3.0,
+        "category": "virginica"
+    },
+    {
+        "yValue": 7.6,
+        "xValue": 3.0,
+        "category": "virginica"
+    },
+    {
+        "yValue": 4.9,
+        "xValue": 2.5,
+        "category": "virginica"
+    },
+    {
+        "yValue": 7.2,
+        "xValue": 3.6,
+        "category": "virginica"
+    }
+]

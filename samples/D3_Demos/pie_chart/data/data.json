@@ -1,0 +1,16 @@
+{
+    "pieChart": [
+        {
+            "color": "red",
+            "description": "aaaaaaaaa",
+            "title": "flowers",
+            "value": 0.62
+        },
+        {
+            "color": "blue",
+            "description": "bbbbbbbbb",
+            "title": "trains",
+            "value": 0.38
+        }
+    ]
+}
