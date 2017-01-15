@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <title>Nginx按Cookie分流</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=600, user-scalable=no">
+    <style>
+        body {
+            color: #666;
+            font-family: "Microsoft Yahei",微软雅黑,sans-serif;
+            margin: 0;
+        }
+
+        h1,h2 {
+            padding: .5em;
+        }
+
+        h2 {
+            background: #e0e0e0;
+        }
+
+        h2~div {
+            margin: 0 1em;
+        }
+
+        li {
+            line-height: 1.5em;
+        }
+
+        hr {
+            margin: 1em 0;
+            border: 1px dashed #e0e0e0;
+        }
+
+        answer {
+            color: rgb(75, 182, 194);
+        }
+
+        code { border-radius: 2px; padding: 16px 0px; margin: 8px 0px 0px; line-height: 1.5; display: block; min-height: 200px; color: rgb(171, 178, 191); background: rgb(40, 44, 52); font-family: consolas, monospace; white-space: nowrap; overflow: auto; }
+        codekeyword { color: rgb(198, 120, 221); }
+        codefnname { color: rgb(75, 182, 194); }
+        codestring, codestring * { color: rgb(124, 195, 121); }
+        codeannotation, codeannotation * { color: rgb(124, 195, 121); }
+        codelinenum { color: rgb(92, 99, 112); padding: 0px 19px 0px 9px; user-select: none; }
+    </style>
+</head>
+
+<body>
+    <h1>Nginx按Cookie分流</h1>
+    <section>
+        <h2>问题</h2>
+        <div>
+            <img src="scene1.gif" alt="云端升级，改动了某些接口的传参方式。"><br>
+            <img src="scene2.gif" alt="旧版App调用改动过传参方式的接口，由于还按旧方式传参，交互失败。">
+        </div>
+    </section>
+    <section>
+        <h2>思考</h2>
+        <div>
+            问题的原因是App和云端版本不一致。那么解决的思路就是能否消除不一致，如果不能，云端怎么兼容不一致。
+            <hr>
+            <h4>消除不一致</h4>
+            升级完云端后，用户用旧版App访问云端时，能否强制用户更新，来消除不一致呢？
+            <br>
+            <answer>App发布新版本 从提交审核到上架AppStore 需要一周左右时间，这段时间新版App还没上架，用户没法更新。</answer>
+            <hr>
+            <h4>兼容不一致</h4>
+            两个方案
+            <ol>
+                <li>程序兼容新旧的两种传参方式。</li>
+                <li>App审核通过前，既有新版Server运行，也有旧版Server运行。旧版App的请求由旧版Server处理。App审核通过后，强制用户更新App，然后关闭旧版Server。</li>
+            </ol>
+            最终程序只需要一种传参方式，方案一产生冗余代码，因此我们采用方案二。云端通过Cookie来区分请求是由旧版App发出的还是新版App发出的。
+        </div>
+    </section>
+    <section>
+        <h2>解决</h2>
+        <ol>
+            <li>App、Web页面添加逻辑
+                <br>
+                <answer>获取程序版本号，设置到Cookie的version字段中。</answer>
+            </li>
+            <li>修改云端nginx.conf
+                <br>
+                <answer>判断请求Cookie中的version，如果等于最新版号，代理到Server New集群，否则代理到Server Old集群。</answer>
+            </li>
+        </ol>
+        <code>
+            <codelinenum>&nbsp;1</codelinenum><codeannotation>#云端nginx.conf http模块配置</codeannotation>
+            <br><codelinenum>&nbsp;2</codelinenum>http {
+            <br><codelinenum>&nbsp;3</codelinenum>&nbsp;&nbsp;&nbsp;&nbsp;include mime.types;
+            <br><codelinenum>&nbsp;4</codelinenum>&nbsp;&nbsp;&nbsp;&nbsp;default_type application/octet-stream;
+            <br><codelinenum>&nbsp;5</codelinenum>
+            <br><codelinenum>&nbsp;6</codelinenum>&nbsp;&nbsp;&nbsp;&nbsp;<codeannotation># 根据请求Cookie中version的值，设置$upstream_name变量</codeannotation>
+            <br><codelinenum>&nbsp;7</codelinenum>&nbsp;&nbsp;&nbsp;&nbsp;<codeannotation># 如果version=1.1，设置$upstream_name=server_new</codeannotation>
+            <br><codelinenum>&nbsp;8</codelinenum>&nbsp;&nbsp;&nbsp;&nbsp;<codeannotation># 否则，设置$upstream_name=server_old</codeannotation>
+            <br><codelinenum>&nbsp;9</codelinenum>&nbsp;&nbsp;&nbsp;&nbsp;map <codekeyword>$cookie_version</codekeyword> <codekeyword>$upstream_name</codekeyword> {
+            <br><codelinenum>10</codelinenum>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.1 <codekeyword>server_new</codekeyword>;
+            <br><codelinenum>11</codelinenum>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;default <codekeyword>server_old</codekeyword>;
+            <br><codelinenum>12</codelinenum>&nbsp;&nbsp;&nbsp;&nbsp;}
+            <br><codelinenum>13</codelinenum>
+            <br><codelinenum>14</codelinenum>&nbsp;&nbsp;&nbsp;&nbsp;server {
+            <br><codelinenum>15</codelinenum>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;listen 80;
+            <br><codelinenum>16</codelinenum>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;server_name localhost;
+            <br><codelinenum>17</codelinenum>
+            <br><codelinenum>18</codelinenum>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;location / {
+            <br><codelinenum>19</codelinenum>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<codeannotation># 将请求代理到名称为 变量$upstream_name的值 的集群</codeannotation>
+            <br><codelinenum>20</codelinenum>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;proxy_pass http://<codekeyword>$upstream_name</codekeyword>;
+            <br><codelinenum>21</codelinenum>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}
+            <br><codelinenum>22</codelinenum>&nbsp;&nbsp;&nbsp;&nbsp;}
+            <br><codelinenum>23</codelinenum>
+            <br><codelinenum>24</codelinenum>&nbsp;&nbsp;&nbsp;&nbsp;<codeannotation># Server New 集群</codeannotation>
+            <br><codelinenum>25</codelinenum>&nbsp;&nbsp;&nbsp;&nbsp;upstream <codekeyword>server_new</codekeyword> {
+            <br><codelinenum>26</codelinenum>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;server 10.200.8.214:1111;
+            <br><codelinenum>27</codelinenum>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;server 10.200.8.214:2222;
+            <br><codelinenum>28</codelinenum>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;server 10.200.8.214:3333;
+            <br><codelinenum>29</codelinenum>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ip_hash;
+            <br><codelinenum>30</codelinenum>&nbsp;&nbsp;&nbsp;&nbsp;}
+            <br><codelinenum>31</codelinenum>
+            <br><codelinenum>32</codelinenum>&nbsp;&nbsp;&nbsp;&nbsp;<codeannotation># Server Old 集群</codeannotation>
+            <br><codelinenum>33</codelinenum>&nbsp;&nbsp;&nbsp;&nbsp;upstream <codekeyword>server_old</codekeyword> {
+            <br><codelinenum>34</codelinenum>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;server 10.200.8.214:4444;
+            <br><codelinenum>35</codelinenum>&nbsp;&nbsp;&nbsp;&nbsp;}
+            <br><codelinenum>36</codelinenum>}
+        </code>
+    </section>
+</body>
+
+</html>
