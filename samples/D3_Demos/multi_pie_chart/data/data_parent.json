@@ -1,0 +1,46 @@
+{
+    "items": [{
+            "value": 60,
+            "message": "网络攻击",
+            "children": [{
+                "value": 10,
+                "message": "发现的网络攻击"
+            }, {
+                "value": 20,
+                "message": "减缓的网络攻击"
+            }, {
+                "value": 30,
+                "message": "阻断的网络攻击"
+            }]
+        },
+        {
+            "value": 130,
+            "message": "扫描",
+            "children": [{
+                "value": 15,
+                "message": "发现的扫描"
+            }, {
+                "value": 5,
+                "message": "减缓的扫描"
+            }, {
+                "value": 10,
+                "message": "阻断的扫描"
+            }]
+        },
+        {
+            "value": 10,
+            "message": "威胁",
+            "children": [{
+                "value": 2,
+                "message": "发现的威胁"
+            }, {
+                "value": 5,
+                "message": "减缓的威胁"
+            }, {
+                "value": 3,
+                "message": "阻断的威胁"
+            }]
+        }
+    ],
+    "value": 200
+}

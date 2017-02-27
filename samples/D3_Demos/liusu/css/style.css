@@ -1,5 +1,6 @@
 .lineChart--area1 {
   fill:  rgba(107, 183, 199, 0.6);
+  z-index: 1;
 }
 .lineChart--areaLine1 {
   fill: none;
@@ -13,6 +14,7 @@
 }
 .lineChart--area2 {
   fill:  rgba(91, 177, 47, 0.6);
+  z-index: 2;
 }
 .lineChart--areaLine2 {
   fill: none;
@@ -26,6 +28,7 @@
 }
 .lineChart--area3 {
   fill:  rgba(224, 81, 81, 0.6);
+  z-index: 3;
 }
 .lineChart--areaLine3 {
   fill: none;
@@ -52,33 +55,43 @@
   stroke: #b3b3b3;
   stroke-width: 2;
 }
-.tooltip1 {
+.lineChart--tooltip {
     position: absolute;
-    border: 1px solid #6bb7c7;
+    border: 1px solid #fff;
     background: #fff;
     box-shadow: 2px 2px 2px #666;
     padding: 2px;
     opacity: 1;
     font-size: 10px;
 }
-.tooltip2 {
-    position: absolute;
-    border: 1px solid #5bb12f;
-    background: #fff;
-    box-shadow: 2px 2px 2px #666;
-    padding: 2px;
-    opacity: 1;
-    font-size: 10px;
-}
-.tooltip3 {
-    position: absolute;
-    border: 1px solid #e05151;
-    background: #fff;
-    box-shadow: 2px 2px 2px #666;
-    padding: 2px;
-    opacity: 1;
-    font-size: 10px;
+.click{
+    cursor: pointer;
 }
 .hidden {
     visibility: hidden;
+}
+.pie-chart-header {
+    float: left;
+    width: 100%;
+}
+
+.pie-header-title {
+    float: left;
+    margin-left: 10px;
+}
+
+.pie-header-button {
+    float: left;
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+.pie-header-button::after {
+    content: ' ';
+    width: 16px;
+    height: 16px;
+    background-image: url('triangle.png');
+    position: absolute;
+    margin-left: 2px;
+    margin-top: -2px;
 }
