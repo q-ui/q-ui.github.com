@@ -217,9 +217,15 @@
                                 left = svgRect.right - tooltipWidth;
                             }
                             var value = [];
-                            value.push(data[min].value1);
-                            value.push(data[min].value2);
-                            value.push(data[min].value3);
+                            if (typeArr[0].show) {
+                                value.push(data[min].value1);
+                            }
+                            if (typeArr[1].show) {
+                                value.push(data[min].value2);
+                            }
+                            if (typeArr[2].show) {
+                                value.push(data[min].value3);
+                            }
                             var top = y(d3.max(value)) + svgRect.top + 20;
                             return 'left: ' + left + 'px; '
                                 + 'top: ' + top + 'px';
@@ -239,12 +245,16 @@
         }
 
         function makeTooltipHtml(d) {
-            var tpl = '<table>'
-                + '<tr><td>时间：</td><td>$1</td></tr>'
-                + '<tr><td>数值1：</td><td>$2</td></tr>'
-                + '<tr><td>数值2：</td><td>$3</td></tr>'
-                + '<tr><td>数值3：</td><td>$4</td></tr>';
-            return tpl.replace('$1', d.date).replace('$2', d.value1).replace('$3', d.value2).replace('$4', d.value3);
+            var html = ''.concat(
+                '<table>',
+                '<tr><td>时间：</td><td>',
+                d.date,
+                '</td></tr>',
+                typeArr[0].show ? '<tr><td>数值1：</td><td>' + d.value1 + '</td></tr>' : '',
+                typeArr[1].show ? '<tr><td>数值2：</td><td>' + d.value2 + '</td></tr>' : '',
+                typeArr[2].show ? '<tr><td>数值3：</td><td>' + d.value3 + '</td></tr>' : ''
+            );
+            return html;
         }
 
         function breakdown(data) {
