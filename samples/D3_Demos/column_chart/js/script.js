@@ -73,8 +73,6 @@
             .attr("class", "column")
             .attr("x", function (d) { return x(d.name); })
             .attr("width", x.bandwidth())
-            .attr("y", function (d) { return y(d.value); })
-            .attr("height", function (d) { return height - yAxisMargin - y(d.value); })
             .on('mouseover', function (data, index, arr) {
                 clearTimeout(hideTipTimeout);
                 tooltip.html("名称&nbsp;&nbsp;" + data.name + '<br>数量&nbsp;&nbsp;' + data.value);
@@ -89,7 +87,11 @@
                 hideTipTimeout = setTimeout(function () {
                     tooltip.style('visibility', 'hidden');
                 }, 1000);
-            });
+            })
+            .attr("y", function (d) { return y(0); })
+            .transition()
+            .attr("y", function (d) { return y(d.value); })
+            .attr("height", function (d) { return height - yAxisMargin - y(d.value); });
 
         window.onresize = function () {
             drawGraph();
