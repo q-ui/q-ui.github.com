@@ -1,0 +1,53 @@
+.column {
+  fill: rgb(124, 181, 236);
+}
+
+.column:hover {
+  fill: rgb(149, 206, 255);
+}
+
+.axis {
+  font: 12px sans-serif;
+}
+
+.axis text {
+  fill: gray;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: lightgray;
+}
+
+.y.axis path {
+  display: none;
+}
+
+.axis line.grid-line {
+  stroke: #e0e0e0;
+}
+
+.column-tooltip {
+  position: absolute;
+  border: 1px solid lightgray;
+  color: gray;
+  padding: 5px 12px;
+  background: white;
+  border-radius: 2px;
+  box-shadow: 2px 2px 4px gray;
+  visibility: hidden;
+  color: black;
+}
+
+.column-tooltip::after {
+  content: '';
+  position: absolute;
+  background: white;
+  width: 10px;
+  height: 10px;
+  left: calc(50% - 5px);
+  bottom: -5px;
+  transform: rotate(45deg);
+  box-shadow: 2px 2px 2px gray;
+}
