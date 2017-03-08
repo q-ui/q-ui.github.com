@@ -220,18 +220,16 @@ function ScatterChart() {
         var dx;
         var zoomData = [];
 
-        var reverseX = d3.scaleLinear().domain(_x.range()).range(_x.domain());
-
         for (var i = 0; i < _data.length; i++) {
             d = _data[i];
-            dx = _x(d.x)
+            dx = _x(d.x);
             if (dx <= maxX && dx >= minX) {
                 zoomData.push(d);
             }
         }
 
-        var newStartX = parseInt(reverseX(minX));
-        var newEndX = parseInt(reverseX(maxX));
+        var newStartX = parseInt(_x.invert(minX));
+        var newEndX = parseInt(_x.invert(maxX));
         if (newEndX - newStartX >= 3600 * 1000) {
             _chart.data(zoomData, true, newStartX, newEndX).render();
         }
