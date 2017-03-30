@@ -52,15 +52,15 @@ function Map() {
         drawMap(data);
     };
 
-    _map.fill = function (fillData) {
-        var max = d3.max(fillData, function (d) { return d.value; });
+    _map.fillData = function (data) {
+        var max = d3.max(data, function (d) { return d.value; });
         var linear = d3.scaleLinear().domain([0, max]).range(['#ffffff', '#000000']);
         _subunits.selectAll('path.subunit').each(function (d, index, nodes) {
             var found = false;
-            for (var i = 0; i < fillData.length; i++) {
-                if (d.properties[_nameField] == fillData[i].key) {
+            for (var i = 0; i < data.length; i++) {
+                if (d.properties[_nameField] == data[i].key) {
                     found = true;
-                    d3.select(this).style('fill', linear(fillData[i].value));
+                    d3.select(this).style('fill', linear(data[i].value));
                     break;
                 }
             }
@@ -116,9 +116,9 @@ function Map() {
         _initialTranslate.x = - ((centerRect.left + centerRect.width / 2) - (containerRect.left + containerRect.width / 2));
         _initialTranslate.y = - ((centerRect.top + centerRect.height / 2) - (containerRect.top + containerRect.height / 2));
 
-        var scale = _w / centerRect.width;
+        var scale = Math.min(_w / centerRect.width, _h / centerRect.height);
         if (scale > 1) {
-            scale = Math.floor(_w / centerRect.width);
+            scale = Math.floor(scale);
         }
         _subunits.insert('rect', 'path').attr('width', _w).attr('height', _h).attr('fill', '#fff');
 

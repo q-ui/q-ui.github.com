@@ -19,7 +19,7 @@ function redrawMap(type) {
         }
         map.draw(geoData);
         d3.json('data/' + type.toLowerCase() + '.data.json', function (err, data) {
-            map.fill(data);
+            map.fillData(data);
         });
     });
 }
