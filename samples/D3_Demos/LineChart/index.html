@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Line</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="style.css" rel="stylesheet">
+    <script src="/Users/Mac/Desktop/work/D3DEV/node_modules/d3/build/d3.js"></script>
+</head>
+
+<body>
+    <div id="chartContainer" style="position: absolute; left:100px; top:100px"></div>
+    <script src="script.js"></script>
+    <script>
+        var obj = lineChart().container(document.getElementById('chartContainer'));
+        obj.xField('time').yFields(['traffic1', 'traffic2']);
+        obj.colors(d3.scaleOrdinal(d3.schemeCategory20));
+        obj.yLabelText('yAxis').ytick([0, 10, 20, 30]).typeArr([
+            { typeId: 1, typeText: 'value1', color: '#6bb7c7', show: true },
+            { typeId: 2, typeText: 'value2', color: '#5bb12f', show: true }
+        ]
+        );
+        obj.yformat(function (v) {
+            return v.toFixed(2);
+        });
+        obj.xformat(function (v) {
+            if (Math.floor(v) == v) {
+                return v.toFixed(0);
+            }
+            return v;
+        });
+        obj.width(500).height(200).data([{
+            time: null, traffic1: 10.1, traffic2: 10
+        }, {
+            time: 2, traffic1: 1.2, traffic2: 2
+        }, {
+            time: 3, traffic1: 20, traffic2: 12
+        }, {
+            time: 4, traffic1: 13, traffic2: 9
+        }, {
+            time: 5, traffic1: 15, traffic2: 30
+        }]).render();
+
+// obj = lineChart();
+// obj.xField('time').yFields(['traffic1']);
+// obj.colors(['#4682b4', '#000000']);
+// obj.yLabelText('yAxis');
+// obj.yformat(function (v) {
+//     return v.toFixed(2);
+// });
+// obj.xformat(function (v) {
+//     if (Math.floor(v) == v) {
+//         return v.toFixed(0);
+//     }
+//     return v;
+// });
+// obj.width(500).height(200).data([{
+//     time: 1, traffic1: 10.1
+// }, {
+//     time: 2, traffic1: 1.2
+// }, {
+//     time: 3, traffic1: 20
+// }, {
+//     time: 4, traffic1: 15
+// }]).render();
+    </script>
+</body>
+
+</html>
