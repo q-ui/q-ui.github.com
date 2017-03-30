@@ -11,13 +11,16 @@ function radioChangeHandler() {
 }
 
 function redrawMap(type) {
-    d3.json('data/' + type.toLowerCase() + '.geo.json', function (err, data) {
+    d3.json('data/' + type.toLowerCase() + '.geo.json', function (err, geoData) {
         if (type.toLowerCase() == 'china') {
             map.nameField('abbreviation');
         } else if (type.toLowerCase() == 'world') {
             map.nameField('iso_a2');
         }
-        map.draw(data);
+        map.draw(geoData);
+        d3.json('data/' + type.toLowerCase() + '.data.json', function (err, data) {
+            map.fill(data);
+        });
     });
 }
 

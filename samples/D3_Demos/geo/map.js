@@ -52,6 +52,24 @@ function Map() {
         drawMap(data);
     };
 
+    _map.fill = function (fillData) {
+        var max = d3.max(fillData, function (d) { return d.value; });
+        var linear = d3.scaleLinear().domain([0, max]).range(['#ffffff', '#000000']);
+        _subunits.selectAll('path.subunit').each(function (d, index, nodes) {
+            var found = false;
+            for (var i = 0; i < fillData.length; i++) {
+                if (d.properties[_nameField] == fillData[i].key) {
+                    found = true;
+                    d3.select(this).style('fill', linear(fillData[i].value));
+                    break;
+                }
+            }
+            if (!found) {
+                d3.select(this).style('fill', '#fff');
+            }
+        });
+    };
+
     function initControlBar() {
         _controlBar = _container.append('div').attr('class', 'control-bar');
         _controlBar.append('img').attr('class', 'zoom-in').attr('src', 'images/map-zoomin.png');
@@ -86,7 +104,7 @@ function Map() {
             })
             .attr('d', path)
             .style('fill', '#FFF')
-            .style('stroke', '#000');
+            .style('stroke', '#999');
         transformMap();
     }
 
