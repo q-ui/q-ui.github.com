@@ -8,6 +8,7 @@ function Map() {
     var _zoom;
     var _scaleExtent;
     var _initialTranslate;
+    var _fillLinear;
 
     _map.nameField = function (field) {
         if (arguments.length == 0) {
@@ -54,21 +55,26 @@ function Map() {
 
     _map.fillData = function (data) {
         var max = d3.max(data, function (d) { return d.value; });
-        var linear = d3.scaleLinear().domain([0, max]).range(['#ffffff', '#000000']);
+        _fillLinear = d3.scaleLinear().domain([0, max]).range(['#ffffff', '#000000']);
         _subunits.selectAll('path.subunit').each(function (d, index, nodes) {
-            var found = false;
+            this.fillData = 0;
             for (var i = 0; i < data.length; i++) {
                 if (d.properties[_nameField] == data[i].key) {
-                    found = true;
-                    d3.select(this).style('fill', linear(data[i].value));
+                    this.fillData = data[i].value;
                     break;
                 }
             }
-            if (!found) {
-                d3.select(this).style('fill', '#fff');
-            }
+            fillSubUnit(this);
         });
     };
+
+    function fillSubUnit(subUnit) {
+        if (subUnit.isMouseOver) {
+            d3.select(subUnit).style('fill', '#ff9900');
+        } else {
+            d3.select(subUnit).style('fill', _fillLinear(subUnit.fillData));
+        }
+    }
 
     function initControlBar() {
         _controlBar = _container.append('div').attr('class', 'control-bar');
@@ -104,7 +110,15 @@ function Map() {
             })
             .attr('d', path)
             .style('fill', '#FFF')
-            .style('stroke', '#999');
+            .style('stroke', '#999')
+            .on('mouseover', function () {
+                this.isMouseOver = true;
+                fillSubUnit(this);
+            })
+            .on('mouseout', function () {
+                this.isMouseOver = false;
+                fillSubUnit(this);
+            });
         transformMap();
     }
 
@@ -120,7 +134,7 @@ function Map() {
         if (scale > 1) {
             scale = Math.floor(scale);
         }
-        _subunits.insert('rect', 'path').attr('width', _w).attr('height', _h).attr('fill', '#fff');
+        _subunits.insert('rect', 'path').attr('width', _w).attr('height', _h).attr('fill', '#ddf');
 
         _zoom = d3.zoom().on("zoom", zoomed);
         _zoom.translateBy(_subunits, _initialTranslate.x, _initialTranslate.y);
