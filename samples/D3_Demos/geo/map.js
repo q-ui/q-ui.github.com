@@ -143,6 +143,10 @@ function Map() {
                 var pos = d3.mouse(_container.node());
                 var x = pos[0] + 10;
                 var y = pos[1] + 10;
+                x = Math.min(_w - _tooltip.node(0).clientWidth - 2, x);
+                if (y + _tooltip.node(0).clientHeight > _h) {
+                    y = pos[1] - 10 - _tooltip.node(0).clientHeight;
+                }
                 _tooltip.style('left', x + 'px');
                 _tooltip.style('top', y + 'px');
                 _tooltip.style('visibility', 'visible');
