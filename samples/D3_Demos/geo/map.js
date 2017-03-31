@@ -64,7 +64,7 @@ function Map() {
 
     _map.fillData = function (data) {
         var max = d3.max(data, function (d) { return d.value; });
-        _fillLinear = d3.scaleLinear().domain([0, max]).range(['#aaaaaa', '#555555']);
+        _fillLinear = d3.scaleLinear().domain([0, max]).range(['#aaaaaa', '#444444']);
         _subunits.selectAll('path.subunit').each(function (d, index, nodes) {
             this.fillData = 0;
             for (var i = 0; i < data.length; i++) {
@@ -172,7 +172,7 @@ function Map() {
         if (scale > 1) {
             scale = Math.floor(scale);
         }
-        _subunits.insert('rect', 'path').attr('width', _w).attr('height', _h).attr('fill', '#ddf');
+        _subunits.insert('rect', 'path').attr('width', _w).attr('height', _h).attr('fill', '#eef');
 
         _zoom = d3.zoom().on("zoom", zoomed);
         _zoom.translateBy(_subunits, _initialTranslate.x, _initialTranslate.y);
