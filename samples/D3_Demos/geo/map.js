@@ -1,9 +1,9 @@
 function Map() {
     var _map = {};
     var _container;
-    var _svg, _controlBar;
+    var _svg, _controlBar, _tooltip;
     var _w, _h;
-    var _nameField = '';
+    var _nameField = '', _labelField;
     var _subunits;
     var _zoom;
     var _scaleExtent;
@@ -15,6 +15,14 @@ function Map() {
             return _nameField;
         }
         _nameField = field;
+        return _map;
+    };
+
+    _map.labelField = function (field) {
+        if (arguments.length == 0) {
+            return _labelField;
+        }
+        _labelField = field;
         return _map;
     };
 
@@ -46,6 +54,7 @@ function Map() {
         if (!_svg) {
             _svg = _container.append('svg');
             initControlBar();
+            initTooltip();
         }
         _svg.html('');
         _svg.attr('width', _w).attr('height', _h);
@@ -55,7 +64,7 @@ function Map() {
 
     _map.fillData = function (data) {
         var max = d3.max(data, function (d) { return d.value; });
-        _fillLinear = d3.scaleLinear().domain([0, max]).range(['#ffffff', '#555555']);
+        _fillLinear = d3.scaleLinear().domain([0, max]).range(['#aaaaaa', '#555555']);
         _subunits.selectAll('path.subunit').each(function (d, index, nodes) {
             this.fillData = 0;
             for (var i = 0; i < data.length; i++) {
@@ -72,7 +81,11 @@ function Map() {
         if (subUnit.isMouseOver) {
             d3.select(subUnit).style('fill', '#ff9900');
         } else {
-            d3.select(subUnit).style('fill', _fillLinear(subUnit.fillData));
+            if (subUnit.fillData == 0) {
+                d3.select(subUnit).style('fill', '#ffffff');
+            } else {
+                d3.select(subUnit).style('fill', _fillLinear(subUnit.fillData));
+            }
         }
     }
 
@@ -93,6 +106,11 @@ function Map() {
                 _zoom.scaleTo(_subunits, _scaleExtent[0]);
             }
         });
+    }
+
+    function initTooltip() {
+        _tooltip = _container.append('div').attr('class', 'tooltip');
+        _tooltip.style('visibility', 'hidden');
     }
 
     function drawMap(data) {
@@ -118,6 +136,22 @@ function Map() {
             .on('mouseout', function () {
                 this.isMouseOver = false;
                 fillSubUnit(this);
+            })
+            .on('mousemove', function (d) {
+                _tooltip.html(d.properties[_labelField] + ': ' + this.fillData);
+
+                var pos = d3.mouse(_container.node());
+                var x = pos[0] + 10;
+                var y = pos[1] + 10;
+                _tooltip.style('left', x + 'px');
+                _tooltip.style('top', y + 'px');
+                _tooltip.style('visibility', 'visible');
+
+                d3.event.stopPropagation();
+                d3.select(document.body).on('mousemove', function () {
+                    d3.select(document.body).on('mousemove', null);
+                    _tooltip.style('visibility', 'hidden');
+                });
             });
         transformMap();
     }
