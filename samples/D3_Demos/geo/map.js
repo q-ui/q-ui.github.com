@@ -55,7 +55,7 @@ function Map() {
 
     _map.fillData = function (data) {
         var max = d3.max(data, function (d) { return d.value; });
-        _fillLinear = d3.scaleLinear().domain([0, max]).range(['#ffffff', '#000000']);
+        _fillLinear = d3.scaleLinear().domain([0, max]).range(['#ffffff', '#555555']);
         _subunits.selectAll('path.subunit').each(function (d, index, nodes) {
             this.fillData = 0;
             for (var i = 0; i < data.length; i++) {
