@@ -36,7 +36,7 @@ function Map() {
 
     _map.width = function (w) {
         if (arguments.length == 0) {
-            return _container;
+            return _w;
         }
         _w = w;
         return _map;
@@ -44,7 +44,7 @@ function Map() {
 
     _map.height = function (h) {
         if (arguments.length == 0) {
-            return _container;
+            return _h;
         }
         _h = h;
         return _map;
