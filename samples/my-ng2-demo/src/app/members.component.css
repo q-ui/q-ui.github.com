@@ -1,0 +1,47 @@
+.grid {
+    margin: 10px 5px 10px 5px;
+    background-color:#FFFFFF;
+    box-shadow: 1px 3px 3px #666666;
+}
+.grid-member {
+    display: inline-block;
+    width:75px;
+    font-size: 18px;
+    margin: 15px 15px 15px 15px;
+    box-shadow: 1px 3px 3px #555555;
+    background-color: #88FF88;
+    text-align: center;
+    padding: 5px 0 5px 0;
+}
+.grid-member:active {
+    box-shadow: 0px 1px 1px #555555;
+	color: #666666;
+}
+.compare-place {
+    background-color:#FFFFFF;
+    box-shadow: 1px 3px 3px #666666;
+    margin: 10px 5px 10px 5px;
+}
+
+.compare-basic {
+    width: 80px;
+    height: 40px;
+    border: 1px solid #666666;
+    margin: 10px 30px 10px 30px;
+    display: inline-block;
+}
+.compare-empty {
+    background-color: #dddddd;
+}
+.compare-full {
+    background-color: #FFFFFF;
+}
+.compare-win {
+    background-color: #00FF00;
+}
+.compare-lose {
+    background-color: #FF0000;
+}
+.compare-equal {
+    background-color: #0000FF
+}
