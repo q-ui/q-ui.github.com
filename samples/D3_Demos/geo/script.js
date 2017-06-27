@@ -13,13 +13,13 @@ function radioChangeHandler() {
 function redrawMap(type) {
     d3.json('data/' + type.toLowerCase() + '.geo.json', function (err, geoData) {
         if (type.toLowerCase() == 'china') {
-            map.nameField('abbreviation');
+            map.nameField('abbreviation').labelField('name');
         } else if (type.toLowerCase() == 'world') {
-            map.nameField('iso_a2');
+            map.nameField('iso_a2').labelField('brk_name');
         }
         map.draw(geoData);
         d3.json('data/' + type.toLowerCase() + '.data.json', function (err, data) {
-            map.fill(data);
+            map.fillData(data);
         });
     });
 }

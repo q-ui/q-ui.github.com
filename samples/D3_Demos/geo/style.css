@@ -6,6 +6,7 @@ body > * {
     height: 400px;
     border: 1px solid black;
     position: relative;
+    overflow: hidden;
 }
 .form-header {
     font-weight: bold;
@@ -25,4 +26,12 @@ body > * {
 
 .control-bar > *:hover {
     background-color: #eee;
+}
+
+.tooltip {
+    position: absolute;
+    box-shadow: 2px 2px 4px;
+    background: white;
+    padding: 5px 10px;
+    white-space: nowrap;
 }

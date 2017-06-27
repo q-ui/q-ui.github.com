@@ -1,0 +1,11 @@
+<div class="grid">
+    <span *ngFor="let member of members" class="grid-member" (click)=onMemberClick(member)>
+        {{member.label}}
+    </span>
+</div>
+<div class="compare-place">
+    <div id="compare-front" class="compare-basic compare-empty">
+    </div>
+    <div id="compare-after" class="compare-basic compare-empty">
+    </div>
+</div>

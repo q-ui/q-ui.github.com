@@ -1,19 +1,28 @@
 function Map() {
     var _map = {};
     var _container;
-    var _svg, _controlBar;
+    var _svg, _controlBar, _tooltip;
     var _w, _h;
-    var _nameField = '';
+    var _nameField = '', _labelField;
     var _subunits;
     var _zoom;
     var _scaleExtent;
     var _initialTranslate;
+    var _fillLinear;
 
     _map.nameField = function (field) {
         if (arguments.length == 0) {
             return _nameField;
         }
         _nameField = field;
+        return _map;
+    };
+
+    _map.labelField = function (field) {
+        if (arguments.length == 0) {
+            return _labelField;
+        }
+        _labelField = field;
         return _map;
     };
 
@@ -27,7 +36,7 @@ function Map() {
 
     _map.width = function (w) {
         if (arguments.length == 0) {
-            return _container;
+            return _w;
         }
         _w = w;
         return _map;
@@ -35,7 +44,7 @@ function Map() {
 
     _map.height = function (h) {
         if (arguments.length == 0) {
-            return _container;
+            return _h;
         }
         _h = h;
         return _map;
@@ -45,6 +54,7 @@ function Map() {
         if (!_svg) {
             _svg = _container.append('svg');
             initControlBar();
+            initTooltip();
         }
         _svg.html('');
         _svg.attr('width', _w).attr('height', _h);
@@ -52,23 +62,32 @@ function Map() {
         drawMap(data);
     };
 
-    _map.fill = function (fillData) {
-        var max = d3.max(fillData, function (d) { return d.value; });
-        var linear = d3.scaleLinear().domain([0, max]).range(['#ffffff', '#000000']);
+    _map.fillData = function (data) {
+        var max = d3.max(data, function (d) { return d.value; });
+        _fillLinear = d3.scaleLinear().domain([0, max]).range(['#aaaaaa', '#444444']);
         _subunits.selectAll('path.subunit').each(function (d, index, nodes) {
-            var found = false;
-            for (var i = 0; i < fillData.length; i++) {
-                if (d.properties[_nameField] == fillData[i].key) {
-                    found = true;
-                    d3.select(this).style('fill', linear(fillData[i].value));
+            this.fillData = 0;
+            for (var i = 0; i < data.length; i++) {
+                if (d.properties[_nameField] == data[i].key) {
+                    this.fillData = data[i].value;
                     break;
                 }
             }
-            if (!found) {
-                d3.select(this).style('fill', '#fff');
-            }
+            fillSubUnit(this);
         });
     };
+
+    function fillSubUnit(subUnit) {
+        if (subUnit.isMouseOver) {
+            d3.select(subUnit).style('fill', '#ff9900');
+        } else {
+            if (subUnit.fillData == 0) {
+                d3.select(subUnit).style('fill', '#ffffff');
+            } else {
+                d3.select(subUnit).style('fill', _fillLinear(subUnit.fillData));
+            }
+        }
+    }
 
     function initControlBar() {
         _controlBar = _container.append('div').attr('class', 'control-bar');
@@ -89,6 +108,11 @@ function Map() {
         });
     }
 
+    function initTooltip() {
+        _tooltip = _container.append('div').attr('class', 'tooltip');
+        _tooltip.style('visibility', 'hidden');
+    }
+
     function drawMap(data) {
         var projection = d3.geoEquirectangular();
         var path = d3.geoPath().projection(projection);
@@ -104,7 +128,35 @@ function Map() {
             })
             .attr('d', path)
             .style('fill', '#FFF')
-            .style('stroke', '#999');
+            .style('stroke', '#999')
+            .on('mouseover', function () {
+                this.isMouseOver = true;
+                fillSubUnit(this);
+            })
+            .on('mouseout', function () {
+                this.isMouseOver = false;
+                fillSubUnit(this);
+            })
+            .on('mousemove', function (d) {
+                _tooltip.html(d.properties[_labelField] + ': ' + this.fillData);
+
+                var pos = d3.mouse(_container.node());
+                var x = pos[0] + 10;
+                var y = pos[1] + 10;
+                x = Math.min(_w - _tooltip.node(0).clientWidth - 2, x);
+                if (y + _tooltip.node(0).clientHeight > _h) {
+                    y = pos[1] - 10 - _tooltip.node(0).clientHeight;
+                }
+                _tooltip.style('left', x + 'px');
+                _tooltip.style('top', y + 'px');
+                _tooltip.style('visibility', 'visible');
+
+                d3.event.stopPropagation();
+                d3.select(document.body).on('mousemove', function () {
+                    d3.select(document.body).on('mousemove', null);
+                    _tooltip.style('visibility', 'hidden');
+                });
+            });
         transformMap();
     }
 
@@ -116,11 +168,11 @@ function Map() {
         _initialTranslate.x = - ((centerRect.left + centerRect.width / 2) - (containerRect.left + containerRect.width / 2));
         _initialTranslate.y = - ((centerRect.top + centerRect.height / 2) - (containerRect.top + containerRect.height / 2));
 
-        var scale = _w / centerRect.width;
+        var scale = Math.min(_w / centerRect.width, _h / centerRect.height);
         if (scale > 1) {
-            scale = Math.floor(_w / centerRect.width);
+            scale = Math.floor(scale);
         }
-        _subunits.insert('rect', 'path').attr('width', _w).attr('height', _h).attr('fill', '#fff');
+        _subunits.insert('rect', 'path').attr('width', _w).attr('height', _h).attr('fill', '#eef');
 
         _zoom = d3.zoom().on("zoom", zoomed);
         _zoom.translateBy(_subunits, _initialTranslate.x, _initialTranslate.y);
